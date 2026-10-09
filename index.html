@@ -145,30 +145,6 @@
   }
   .why-now h2 { color: var(--amber); }
 
-  /* quiz */
-  .quiz-q { font-size: 15.5px; font-weight: 600; margin-bottom: 12px; line-height: 1.5; }
-  .quiz-opt {
-    display: block; width: 100%; text-align: left;
-    background: var(--panel-2); color: var(--text);
-    border: 1px solid var(--line); border-radius: 7px;
-    padding: 11px 13px; margin-bottom: 8px; font-size: 14.5px;
-    font-family: var(--sans); cursor: pointer; line-height: 1.4;
-  }
-  .quiz-opt:active { transform: scale(0.99); }
-  .quiz-opt[data-state="correct"] { border-color: var(--good); background: color-mix(in srgb, var(--good) 14%, var(--panel-2)); }
-  .quiz-opt[data-state="wrong"] { border-color: var(--bad); background: color-mix(in srgb, var(--bad) 14%, var(--panel-2)); }
-  .quiz-opt[disabled] { cursor: default; }
-  .quiz-explain {
-    font-size: 14px; color: var(--text-dim); line-height: 1.55;
-    margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line);
-    display: none;
-  }
-  .quiz-explain.show { display: block; }
-  .quiz-progress {
-    font-family: var(--mono); font-size: 11px; color: var(--text-dim);
-    margin-bottom: 14px; letter-spacing: 0.03em;
-  }
-
   /* AI briefing */
   .ai-card h2 { display: flex; align-items: center; justify-content: space-between; }
   .ai-btn {
@@ -220,16 +196,10 @@
     <p id="whyNow"></p>
   </div>
 
-  <div class="card ai-card">
+  <div class="card ai-card" id="aiCard">
     <h2>live briefing <button class="ai-btn" id="aiBtn">ask claude ▸</button></h2>
     <p class="ai-placeholder" id="aiPlaceholder">Get a fresh, up-to-date take on today's topic and what's changed recently in the surrounding tooling.</p>
     <div class="ai-body ai-hidden" id="aiBody"></div>
-  </div>
-
-  <div class="card" id="quizCard">
-    <h2>pop query — test yourself</h2>
-    <div class="quiz-progress" id="quizProgress"></div>
-    <div id="quizArea"></div>
   </div>
 
   <footer class="note">rotates daily · nothing is saved between visits</footer>
@@ -252,11 +222,7 @@ const LIB = [
     "Snowflake schema = same idea but dimensions are further normalized, trading storage for join complexity",
     "Grain matters most: define 'one row = what' before adding a single column"
   ],
-  whyNow: "Even lakehouse-native tools (dbt, Databricks' medallion architecture) still converge on star-schema-shaped 'gold' layers, because BI semantic layers and columnar engines are both optimized for this exact join topology.",
-  quiz: [
-    { q: "In a star schema, dimension tables typically join to:", opts: ["Other dimension tables directly", "The fact table only", "A separate lookup service", "Nothing — they're standalone"], correct: 1, explain: "Star schemas avoid dimension-to-dimension joins on purpose — every dimension hangs off the fact table in one hop, which keeps BI queries fast and predictable." },
-    { q: "The 'grain' of a fact table refers to:", opts: ["How compressed the data is", "What one row represents", "The number of dimensions attached", "The refresh frequency"], correct: 1, explain: "Grain is the single most important design decision in a fact table — e.g. 'one row per order line item' — everything else follows from it." }
-  ]
+  whyNow: "Even lakehouse-native tools (dbt, Databricks' medallion architecture) still converge on star-schema-shaped 'gold' layers, because BI semantic layers and columnar engines are both optimized for this exact join topology."
 },
 {
   category: "warehousing.storage",
@@ -272,11 +238,7 @@ const LIB = [
     "Trade-off: single-row lookups/updates get relatively more expensive",
     "Redshift, Synapse dedicated pools, Snowflake, BigQuery, ClickHouse all columnar at the core"
   ],
-  whyNow: "The same principle now underpins open table formats like Apache Iceberg and Delta Lake, which store columnar Parquet files but add a transactional metadata layer — letting a lakehouse get warehouse-grade performance without a proprietary storage engine.",
-  quiz: [
-    { q: "Columnar storage speeds up analytical queries mainly because:", opts: ["It uses faster disks", "Queries can skip reading unused columns", "It removes the need for indexes entirely", "Rows are stored in random order"], correct: 1, explain: "Column pruning — reading only the columns a query touches — is the core win; compression benefits stack on top of that." },
-    { q: "Columnar storage tends to be relatively worse at:", opts: ["Aggregating millions of rows", "Compressing repetitive values", "Fetching/updating one full row at a time", "Scanning a single column"], correct: 2, explain: "Because a row's values are scattered across separate column files, reconstructing or updating one full row costs more than in a row store." }
-  ]
+  whyNow: "The same principle now underpins open table formats like Apache Iceberg and Delta Lake, which store columnar Parquet files but add a transactional metadata layer — letting a lakehouse get warehouse-grade performance without a proprietary storage engine."
 },
 {
   category: "modeling.transform",
@@ -292,11 +254,7 @@ const LIB = [
     "dbt is the tool most associated with the 'T' in modern ELT",
     "ELT keeps raw data around, which makes re-processing and debugging easier"
   ],
-  whyNow: "The rise of dbt, cheap columnar cloud warehouses, and now lakehouse table formats has made ELT the default for new pipelines — ETL tools like Informatica/SSIS remain common in legacy or highly regulated environments.",
-  quiz: [
-    { q: "The main enabler that made ELT practical was:", opts: ["Faster internet speeds", "Cheap, elastic warehouse compute/storage", "The invention of SQL", "Smaller data volumes"], correct: 1, explain: "Once cloud warehouses decoupled storage from compute and made both cheap, it became practical to load raw data first and transform it in place." },
-    { q: "A key operational benefit of ELT over ETL is:", opts: ["No orchestration is needed", "Raw source data stays available for reprocessing", "Transform logic runs faster by definition", "It requires no SQL knowledge"], correct: 1, explain: "Because raw data is loaded before transformation, you can always re-derive downstream models without re-extracting from source." }
-  ]
+  whyNow: "The rise of dbt, cheap columnar cloud warehouses, and now lakehouse table formats has made ELT the default for new pipelines — ETL tools like Informatica/SSIS remain common in legacy or highly regulated environments."
 },
 {
   category: "lakehouse.formats",
@@ -312,11 +270,7 @@ const LIB = [
     "Time travel: query a table as it existed at a prior snapshot",
     "Vendor-neutral: multiple engines can read/write the same underlying tables"
   ],
-  whyNow: "This is the single biggest architectural shift in DWH right now — Snowflake, Databricks, Redshift, Synapse, and BigQuery have all added native Iceberg support in the last two years, effectively conceding that the table format layer is becoming a shared, open standard.",
-  quiz: [
-    { q: "Apache Iceberg is best described as:", opts: ["A file compression codec", "A metadata layer that adds transactions/schema evolution to files in object storage", "A replacement for SQL", "A proprietary warehouse engine"], correct: 1, explain: "Iceberg doesn't replace Parquet — it sits above it, tracking snapshots and schema so multiple engines can safely read/write the same table." },
-    { q: "'Time travel' in Iceberg/Delta refers to:", opts: ["Predicting future query load", "Querying a table as of a past snapshot", "Automatic data archival", "Scheduling future transforms"], correct: 1, explain: "Every write creates a new snapshot; time travel lets you query (or roll back to) an earlier one." }
-  ]
+  whyNow: "This is the single biggest architectural shift in DWH right now — Snowflake, Databricks, Redshift, Synapse, and BigQuery have all added native Iceberg support in the last two years, effectively conceding that the table format layer is becoming a shared, open standard."
 },
 {
   category: "warehousing.perf",
@@ -332,11 +286,7 @@ const LIB = [
     "Incremental refresh updates only changed rows, not a full rebuild",
     "Automatic query rewrite can use a materialized view without you querying it explicitly"
   ],
-  whyNow: "As warehouses compete on price-performance, automatic incremental materialized views have become a major differentiator — Redshift's AutoMV and Snowflake's dynamic tables both push this toward being a 'set it and forget it' optimization rather than a manual DBA task.",
-  quiz: [
-    { q: "The main advantage of a materialized view over a regular view is:", opts: ["It uses less storage", "Reads are faster because results are precomputed", "It never needs refreshing", "It only works on small tables"], correct: 1, explain: "Materialized views trade storage and refresh cost for much faster reads, since the result set is already computed." },
-    { q: "Incremental refresh means:", opts: ["The whole view is rebuilt on a timer", "Only changed rows are recomputed", "The view is deleted and recreated", "Refresh happens manually every time"], correct: 1, explain: "Incremental refresh processes just the delta since the last refresh, which is far cheaper than a full rebuild on large fact tables." }
-  ]
+  whyNow: "As warehouses compete on price-performance, automatic incremental materialized views have become a major differentiator — Redshift's AutoMV and Snowflake's dynamic tables both push this toward being a 'set it and forget it' optimization rather than a manual DBA task."
 },
 {
   category: "movement.cdc",
@@ -352,11 +302,7 @@ const LIB = [
     "CDC turns batch ETL into continuous, low-latency data movement",
     "Debezium is the most common open-source log-based CDC engine"
   ],
-  whyNow: "CDC is the connective tissue between OLTP databases and the streaming/lakehouse world — it's the standard pattern for feeding Kafka topics, Iceberg tables, and real-time dashboards from operational databases without hammering production systems with full scans.",
-  quiz: [
-    { q: "Log-based CDC reads changes from:", opts: ["A nightly full table export", "The database's transaction log", "Application-level audit tables only", "A manual change request form"], correct: 1, explain: "Reading the transaction log (WAL, binlog, etc.) lets CDC capture every change with minimal load on the source database." },
-    { q: "Compared to query-based polling, log-based CDC is generally:", opts: ["Slower and heavier on the source", "Lower overhead and more complete", "Only usable for deletes", "Unrelated to streaming pipelines"], correct: 1, explain: "Polling for changed rows adds load and can miss intermediate changes or deletes; log-based CDC captures every change with far less source impact." }
-  ]
+  whyNow: "CDC is the connective tissue between OLTP databases and the streaming/lakehouse world — it's the standard pattern for feeding Kafka topics, Iceberg tables, and real-time dashboards from operational databases without hammering production systems with full scans."
 },
 {
   category: "querying.oltp_olap",
@@ -372,11 +318,7 @@ const LIB = [
     "Data usually flows OLTP → (CDC/ELT) → OLAP, rarely the other direction",
     "HTAP systems attempt to blur this line but usually trade off one side"
   ],
-  whyNow: "HTAP (Hybrid Transactional/Analytical Processing) engines and Postgres-compatible analytical extensions are chipping at this boundary, but the fundamental storage trade-off — row vs columnar — still makes a dedicated OLAP layer the default for serious analytics.",
-  quiz: [
-    { q: "OLTP systems are typically optimized for:", opts: ["Scanning billions of historical rows", "Many small, fast concurrent transactions", "Running once-a-day batch reports", "Storing data in columnar format"], correct: 1, explain: "OLTP is built for the operational workload — lots of small, concurrent reads and writes with strong consistency." },
-    { q: "The typical direction data flows between the two is:", opts: ["OLAP → OLTP", "OLTP → OLAP", "They never exchange data", "Randomly, depending on load"], correct: 1, explain: "Operational (OLTP) data is extracted and loaded into the analytical (OLAP) warehouse — the reverse is rare and usually a red flag." }
-  ]
+  whyNow: "HTAP (Hybrid Transactional/Analytical Processing) engines and Postgres-compatible analytical extensions are chipping at this boundary, but the fundamental storage trade-off — row vs columnar — still makes a dedicated OLAP layer the default for serious analytics."
 },
 {
   category: "querying.optimization",
@@ -392,11 +334,7 @@ const LIB = [
     "Redshift: DISTKEY/SORTKEY; Synapse: hash/round-robin/replicated distribution + clustered columnstore index",
     "A co-located join (same distribution key on both sides) avoids data movement entirely"
   ],
-  whyNow: "Fully managed warehouses (Snowflake, BigQuery) are pushing to auto-select these physical layout decisions for you via micro-partitioning and adaptive clustering — but Redshift and Synapse dedicated pools still put a meaningful chunk of this responsibility on the DBA, which is exactly the kind of tuning work reverse-KT handovers need to cover.",
-  quiz: [
-    { q: "Choosing a bad distribution key mainly risks:", opts: ["Slower disk compression", "Heavy network shuffling during joins", "Losing data on failover", "Breaking schema evolution"], correct: 1, explain: "If joined tables aren't distributed on the join key, the engine has to move rows across nodes over the network before it can join them." },
-    { q: "A sort key primarily helps performance by:", opts: ["Compressing text columns", "Letting the engine skip blocks that can't match a filter", "Speeding up single-row inserts", "Reducing the number of nodes needed"], correct: 1, explain: "Sorted data lets the engine use min/max zone maps to skip whole blocks that fall outside a filter's range, avoiding unnecessary scans." }
-  ]
+  whyNow: "Fully managed warehouses (Snowflake, BigQuery) are pushing to auto-select these physical layout decisions for you via micro-partitioning and adaptive clustering — but Redshift and Synapse dedicated pools still put a meaningful chunk of this responsibility on the DBA, which is exactly the kind of tuning work reverse-KT handovers need to cover."
 },
 {
   category: "governance.access",
@@ -412,11 +350,7 @@ const LIB = [
     "Enforced by the engine, not application code — can't be bypassed by querying directly",
     "Available natively in Redshift, Synapse, Snowflake, BigQuery (each with different syntax)"
   ],
-  whyNow: "With GDPR-style regulations spreading and more self-serve BI tools querying warehouses directly, engine-level RLS and masking have shifted from a 'nice to have' to the default way of enforcing PII access rather than trusting every downstream tool to filter correctly.",
-  quiz: [
-    { q: "Row-level security is enforced:", opts: ["In the BI tool's front end", "By application middleware", "By the warehouse engine itself at query time", "Only during nightly batch jobs"], correct: 2, explain: "Because it's enforced by the engine, RLS applies no matter what tool or query writes against the table — it can't be bypassed by going around the app layer." },
-    { q: "The main problem RLS/column masking solves compared to per-role views is:", opts: ["Views are always slower", "Views don't support joins", "Dozens of views drift out of sync and don't scale", "Views can't be queried by BI tools"], correct: 2, explain: "Maintaining a separate restricted view per role for every table becomes unmanageable — native policies apply once, automatically, everywhere." }
-  ]
+  whyNow: "With GDPR-style regulations spreading and more self-serve BI tools querying warehouses directly, engine-level RLS and masking have shifted from a 'nice to have' to the default way of enforcing PII access rather than trusting every downstream tool to filter correctly."
 },
 {
   category: "architecture.trends",
@@ -432,11 +366,7 @@ const LIB = [
     "Works best at genuine scale (many domains, many teams) — often overkill for smaller orgs",
     "Federated governance means shared standards, not a single central gatekeeper"
   ],
-  whyNow: "As lakehouse table formats (Iceberg/Delta) make it technically easy for multiple teams to own and publish tables independently, data mesh has gone from a mostly theoretical framework to something concretely implementable — though most organizations still adopt it partially rather than wholesale.",
-  quiz: [
-    { q: "Data mesh is best described as:", opts: ["A specific database engine", "An organizational/operating model for data ownership", "A file compression format", "A synonym for data lake"], correct: 1, explain: "Data mesh is about who owns and is accountable for data, not a piece of technology — it can be implemented on top of many different storage stacks." },
-    { q: "'Federated governance' in data mesh means:", opts: ["One central team approves every dataset", "No governance rules exist at all", "Shared standards enforced across autonomous domain teams", "Governance is outsourced to a vendor"], correct: 2, explain: "Domains stay autonomous day-to-day, but agree on and are held to shared, cross-cutting standards (naming, security, interoperability)." }
-  ]
+  whyNow: "As lakehouse table formats (Iceberg/Delta) make it technically easy for multiple teams to own and publish tables independently, data mesh has gone from a mostly theoretical framework to something concretely implementable — though most organizations still adopt it partially rather than wholesale."
 },
 {
   category: "streaming.pipelines",
@@ -452,11 +382,7 @@ const LIB = [
     "Kafka Connect provides pre-built source/sink connectors (databases, warehouses, object storage)",
     "Kafka Streams / ksqlDB allow transforming data in-flight, before it ever lands anywhere"
   ],
-  whyNow: "Managed Kafka (Confluent Cloud, MSK, Aiven) plus native Iceberg/Delta sink connectors mean streaming ingestion straight into lakehouse tables is now a fairly standard pattern, blurring the old line between 'batch warehouse' and 'streaming pipeline'.",
-  quiz: [
-    { q: "A key property of Kafka topics is that they are:", opts: ["Deleted immediately after one consumer reads them", "Append-only logs retained for a configurable time", "Only readable by a single consumer at a time", "Row-oriented relational tables"], correct: 1, explain: "Events stay in the log for a retention window, so multiple independent consumers can read (and re-read) the same events without interfering with each other." },
-    { q: "Kafka Connect is primarily used for:", opts: ["Writing SQL queries", "Prebuilt source/sink connectors to move data in and out of Kafka", "Visualizing dashboards", "Managing user permissions"], correct: 1, explain: "Kafka Connect provides a framework and library of connectors so you don't hand-write the plumbing between Kafka and databases, warehouses, or object storage." }
-  ]
+  whyNow: "Managed Kafka (Confluent Cloud, MSK, Aiven) plus native Iceberg/Delta sink connectors mean streaming ingestion straight into lakehouse tables is now a fairly standard pattern, blurring the old line between 'batch warehouse' and 'streaming pipeline'."
 },
 {
   category: "engines.emerging",
@@ -472,11 +398,7 @@ const LIB = [
     "Both challenge the assumption that 'analytics at scale' always requires a distributed cluster",
     "Neither replaces a full warehouse for enterprise-wide governance/concurrency — they excel at focused workloads"
   ],
-  whyNow: "This is one of the fastest-moving corners of the DWH world right now — DuckDB is being embedded inside dbt, Python data tools, and even browser-based apps (via WASM), while ClickHouse's rise in observability/real-time analytics is pressuring traditional warehouses on price-performance for that niche.",
-  quiz: [
-    { q: "DuckDB's main distinguishing trait is that it's:", opts: ["A distributed cluster-only engine", "An embedded, in-process analytical database", "A row-oriented transactional database", "A managed cloud-only service"], correct: 1, explain: "DuckDB runs inside your process (like SQLite) rather than as a separate server, with no cluster to provision — that's its core design bet." },
-    { q: "ClickHouse is most commonly associated with:", opts: ["Embedded mobile apps", "Real-time analytics on high-volume event data", "Replacing OLTP transaction processing", "Document/NoSQL storage"], correct: 1, explain: "ClickHouse's vectorized columnar engine is widely used for real-time analytics and observability workloads with heavy, append-only event volumes." }
-  ]
+  whyNow: "This is one of the fastest-moving corners of the DWH world right now — DuckDB is being embedded inside dbt, Python data tools, and even browser-based apps (via WASM), while ClickHouse's rise in observability/real-time analytics is pressuring traditional warehouses on price-performance for that niche."
 }
 ];
 
@@ -518,53 +440,6 @@ topic.keyPoints.forEach((k, i) => {
 
 document.getElementById('whyNow').textContent = topic.whyNow;
 
-/* ---------------- Quiz ---------------- */
-const quizArea = document.getElementById('quizArea');
-const quizProgress = document.getElementById('quizProgress');
-let answeredCount = 0;
-
-function renderQuiz() {
-  quizArea.innerHTML = '';
-  topic.quiz.forEach((q, qi) => {
-    const block = document.createElement('div');
-    block.style.marginBottom = qi < topic.quiz.length - 1 ? '22px' : '0';
-
-    const qEl = document.createElement('div');
-    qEl.className = 'quiz-q';
-    qEl.textContent = `${qi + 1}. ${q.q}`;
-    block.appendChild(qEl);
-
-    const explainEl = document.createElement('div');
-    explainEl.className = 'quiz-explain';
-    explainEl.textContent = q.explain;
-
-    q.opts.forEach((opt, oi) => {
-      const btn = document.createElement('button');
-      btn.className = 'quiz-opt';
-      btn.textContent = opt;
-      btn.addEventListener('click', () => {
-        const buttons = block.querySelectorAll('.quiz-opt');
-        buttons.forEach(b => b.disabled = true);
-        if (oi === q.correct) {
-          btn.dataset.state = 'correct';
-        } else {
-          btn.dataset.state = 'wrong';
-          buttons[q.correct].dataset.state = 'correct';
-        }
-        explainEl.classList.add('show');
-        answeredCount++;
-        quizProgress.textContent = `${answeredCount} / ${topic.quiz.length} answered this session`;
-      });
-      block.appendChild(btn);
-    });
-
-    block.appendChild(explainEl);
-    quizArea.appendChild(block);
-  });
-  quizProgress.textContent = `0 / ${topic.quiz.length} answered this session`;
-}
-renderQuiz();
-
 /* ---------------- Theme toggle ---------------- */
 const themeToggle = document.getElementById('themeToggle');
 themeToggle.addEventListener('click', () => {
@@ -582,14 +457,12 @@ const aiPlaceholder = document.getElementById('aiPlaceholder');
 
 async function initAI() {
   if (!window.claude || typeof window.claude.use !== 'function') {
-    aiBtn.classList.add('ai-hidden');
-    aiPlaceholder.textContent = "Live briefings aren't available in this view.";
+    document.getElementById('aiCard').classList.add('ai-hidden');
     return;
   }
   const sample = await window.claude.use('sample');
   if (!sample) {
-    aiBtn.classList.add('ai-hidden');
-    aiPlaceholder.textContent = "Live briefings aren't available in this view.";
+    document.getElementById('aiCard').classList.add('ai-hidden');
     return;
   }
 
