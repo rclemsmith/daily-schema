@@ -1,0 +1,19 @@
+{
+  "name": "Daily Schema",
+  "short_name": "Daily Schema",
+  "description": "A daily lesson, key points and quiz on a data warehousing / database concept, plus an on-demand AI briefing.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0C1118",
+  "theme_color": "#0C1118",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
